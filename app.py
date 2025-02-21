@@ -29,6 +29,10 @@ selected_passenger = st.selectbox("Seleccione un pasajero", passenger_names)
 # Filtrar datos del pasajero seleccionado
 passenger_data = df[df["Name"] == selected_passenger].iloc[0]
 
+# Filtrar familiares del pasajero seleccionado
+family_mask = (df["SibSp"] > 0) | (df["Parch"] > 0)
+family_data = df[(df["Ticket"] == passenger_data["Ticket"]) & (df["Name"] != passenger_data["Name"])]
+
 # Mostrar detalles del pasajero
 st.write(f"**Nombre:** {passenger_data['Name']}")
 st.write(f"**Edad:** {passenger_data['Age'] if pd.notna(passenger_data['Age']) else 'Desconocida'}")
@@ -36,6 +40,12 @@ st.write(f"**Clase:** {passenger_data['Pclass']}")
 st.write(f"**Tarifa:** {passenger_data['Fare']}")
 st.write(f"**Sobrevivió:** {'Sí' if passenger_data['Survived'] == 1 else 'No'}")
 st.write(f"**Familiares a bordo:** {passenger_data['SibSp'] + passenger_data['Parch']}")
+
+# Mostrar información de los familiares si existen
+if not family_data.empty:
+    st.write("### Familiares a bordo:")
+    for _, row in family_data.iterrows():
+        st.write(f"- **Nombre:** {row['Name']} | **Sobrevivió:** {'Sí' if row['Survived'] == 1 else 'No'}")
 
 # Crear mapa interactivo
 def create_map(data):

@@ -21,6 +21,9 @@ embark_coords = {
     "S": (50.9049, -1.4043)   # Southampton, Reino Unido
 }
 
+# Extraer apellido de los pasajeros
+df["LastName"] = df["Name"].apply(lambda x: x.split(",")[0])
+
 # Interfaz de la app
 st.title("🌍 Mapa Interactivo de Pasajeros del Titanic")
 st.write("Seleccione filtros para explorar los datos y visualizar detalles de los pasajeros.")
@@ -69,7 +72,7 @@ selected_passenger = st.selectbox("Seleccione un pasajero", passenger_names)
 passenger_data = filtered_df[filtered_df["Name"] == selected_passenger].iloc[0]
 
 # Filtrar familiares del pasajero seleccionado
-family_data = df[(df["Ticket"] == passenger_data["Ticket"]) & (df["Name"] != passenger_data["Name"])]
+family_data = df[(df["LastName"] == passenger_data["LastName"]) & (df["Name"] != passenger_data["Name"])]
 
 # Mostrar detalles del pasajero
 st.subheader("🧑‍💼 Detalles del Pasajero")

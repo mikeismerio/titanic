@@ -23,10 +23,24 @@ embark_coords = {
 
 # Interfaz de la app
 st.title("🌍 Mapa Interactivo de Pasajeros del Titanic")
-st.write("Seleccione un pasajero para ver sus detalles y ubicación en el mapa.")
+st.write("Seleccione filtros para explorar los datos y visualizar detalles de los pasajeros.")
 
-# Mostrar mapa global con todas las ubicaciones de embarque
-def create_global_map(data):
+# Filtros de selección
+gender_filter = st.selectbox("Seleccione Género", ["Todos"] + df["Sex"].unique().tolist())
+class_filter = st.selectbox("Seleccione Clase", ["Todas"] + df["Pclass"].astype(str).unique().tolist())
+family_filter = st.slider("Número de Familiares a Bordo", 0, df["SibSp"].max() + df["Parch"].max(), (0, df["SibSp"].max() + df["Parch"].max()))
+
+# Aplicar filtros
+filtered_df = df.copy()
+if gender_filter != "Todos":
+    filtered_df = filtered_df[filtered_df["Sex"] == gender_filter]
+if class_filter != "Todas":
+    filtered_df = filtered_df[filtered_df["Pclass"].astype(str) == class_filter]
+filtered_df = filtered_df[(filtered_df["SibSp"] + filtered_df["Parch"]).between(family_filter[0], family_filter[1])]
+
+# Mapa Global con los pasajeros filtrados
+st.subheader("🌍 Mapa Global de Procedencia de Pasajeros Filtrados")
+def create_filtered_map(data):
     m = folium.Map(location=[51.0, -10.0], zoom_start=3)
     
     for _, row in data.iterrows():
@@ -44,16 +58,15 @@ def create_global_map(data):
     
     return m
 
-st.subheader("🌍 Mapa Global de Procedencia de Pasajeros")
-global_map = create_global_map(df)
-folium_static(global_map)
+filtered_map = create_filtered_map(filtered_df)
+folium_static(filtered_map)
 
 # Lista desplegable para seleccionar pasajero
-passenger_names = df["Name"].tolist()
+passenger_names = filtered_df["Name"].tolist()
 selected_passenger = st.selectbox("Seleccione un pasajero", passenger_names)
 
 # Filtrar datos del pasajero seleccionado
-passenger_data = df[df["Name"] == selected_passenger].iloc[0]
+passenger_data = filtered_df[filtered_df["Name"] == selected_passenger].iloc[0]
 
 # Filtrar familiares del pasajero seleccionado
 family_data = df[(df["Ticket"] == passenger_data["Ticket"]) & (df["Name"] != passenger_data["Name"])]
@@ -74,6 +87,7 @@ if not family_data.empty:
         st.write(f"- **Nombre:** {row['Name']} | **Sobrevivió:** {'Sí' if row['Survived'] == 1 else 'No'}")
 
 # Crear mapa interactivo individual
+st.subheader("📍 Ubicación del Pasajero Seleccionado")
 def create_map(data):
     m = folium.Map(location=[51.0, -10.0], zoom_start=3)
     
@@ -93,7 +107,6 @@ def create_map(data):
     
     return m
 
-st.subheader("📍 Ubicación del Pasajero Seleccionado")
 mapa = create_map(passenger_data)
 folium_static(mapa)
 

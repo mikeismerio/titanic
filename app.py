@@ -24,6 +24,10 @@ gender_filter = st.selectbox("🎭 Seleccione Género", ["Todos"] + df["Sex"].un
 class_filter = st.selectbox("🏷️ Seleccione Clase", ["Todas"] + df["Pclass"].astype(str).unique().tolist())
 family_filter = st.slider("👨‍👩‍👧 Número de Familiares a Bordo", 0, df["SibSp"].max() + df["Parch"].max(), (0, df["SibSp"].max() + df["Parch"].max()))
 
+# Slider para filtrar por tarifa de pasaje
+fare_min, fare_max = df["Fare"].min(), df["Fare"].max()
+fare_filter = st.slider("💰 Rango de Tarifa del Pasaje", float(fare_min), float(fare_max), (float(fare_min), float(fare_max)))
+
 # Aplicar filtros
 filtered_df = df.copy()
 if gender_filter != "Todos":
@@ -31,6 +35,7 @@ if gender_filter != "Todos":
 if class_filter != "Todas":
     filtered_df = filtered_df[filtered_df["Pclass"].astype(str) == class_filter]
 filtered_df = filtered_df[(filtered_df["SibSp"] + filtered_df["Parch"]).between(family_filter[0], family_filter[1])]
+filtered_df = filtered_df[filtered_df["Fare"].between(fare_filter[0], fare_filter[1])]
 
 # Lista desplegable para seleccionar pasajero
 passenger_names = filtered_df["Name"].tolist()
